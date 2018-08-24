@@ -5,17 +5,34 @@ output:
     keep_md: true
 ---
 
-## Loading and preprocessing the data
-```{r}
-activity<-read.csv("activity.csv")
+```{r, echo=TRUE}
+
 library(dplyr)
 library(lattice)
+library(xtable)
+library(knitr)
 ```
-Convert date type into POSIXct type
+## Set global option echo to "TRUE"
+```{r setoptions, echo=TRUE}
+opts_chunk$set(echo=TRUE)
+```
+
+
+## Loading and preprocessing the data
+```{r}
+activity<-read.csv("activity/activity.csv")
+
+```
+##Convert date type into POSIXct type
 ```{r}
 activity$date <- as.POSIXct(activity$date)
 ```
+
+
+
+
 # What is mean total number of steps taken per day?
+
 
 ##1. Calculate the total number of steps taken per day, save to *a*
 ```{r}
@@ -25,13 +42,23 @@ activity %>% group_by(date) %>% summarise(total_step = sum(steps, na.rm = TRUE))
 ##3. Calculate and report the mean and median of the total number of steps taken per day
 
 ```{r}
-hist(a$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
-abline(v=median(a$total_step), col="red")
-abline(v=mean(a$total_step),col="blue")
-text(mean(a$total_step),25,labels="mean", pos=4, col="blue")  
-text(median(a$total_step),20,labels="median", pos=4, col="red")  
-```
+z.plot1<-function(){
+        
+        hist(a$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
+        abline(v=median(a$total_step), col="red")
+        abline(v=mean(a$total_step),col="blue")
+        text(mean(a$total_step),25,labels="mean", pos=4, col="blue")  
+        text(median(a$total_step),20,labels="median", pos=4, col="red") 
+        
+        
+}
+z.plot1()
+mean <- mean(a$total_step)
+median <- median(a$total_step)
 
+```
+The mean of the total number of steps taken per day is `r mean`.
+The median of the total number of steps taken per day is `r median`.
 
 
 # What is the average daily activity pattern?
@@ -39,6 +66,7 @@ text(median(a$total_step),20,labels="median", pos=4, col="red")
 ##1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
 ```{r}
+
 activity %>% group_by(interval) %>% summarise(avg_step = mean(steps, na.rm = TRUE)) ->b
 
 plot(b$interval,b$avg_step, type="l", ylab="Average # of steps", xlab="Interval index", main="5-minute interval")
@@ -51,7 +79,7 @@ text(x,y,labels="maximum # of steps", pos=4, col="red")
 
 ##2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-        Interval `r x` on average across all the days contains the maximum number of steps `r y`. 
+Interval `r x` on average across all the days contains the maximum number of steps `r y`. 
 
 
 # Imputing missing values
@@ -70,7 +98,10 @@ text(1.9,0,labels=na, pos=3)
 
 
 
-##2. Devise a strategy for filling in all of the missing values in the dataset. I'll use the average number of steps taken, averaged across all days (y-axis) to impute the missing values at each correspoinding interval.
+##2. Devise a strategy for filling in all of the missing values in the dataset. 
+
+I'll use the average number of steps taken, averaged across all days (y-axis) to impute the missing values at each correspoinding interval.
+
 ##3. Create a new dataset dfinal that is equal to the original dataset but with the missing data filled in.
 
 
@@ -86,31 +117,38 @@ rbind(d1m,d2)->dfinal
 
 ##4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day
 ```{r}
-dfinal %>% group_by(date) %>% summarise(total_step = sum(steps, na.rm = TRUE)) ->dfinal2
 
-hist(dfinal2$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
-abline(v=median(dfinal2$total_step), col="red")
-abline(v=mean(dfinal2$total_step),col="blue")
+z.plot2<-function(){
+        
+        dfinal %>% group_by(date) %>% summarise(total_step = sum(steps, na.rm = TRUE)) ->dfinal2
+        
+        p2<-hist(dfinal2$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
+        abline(v=median(dfinal2$total_step), col="red")
+        abline(v=mean(dfinal2$total_step),col="blue")
+        
+        text(mean(dfinal2$total_step),25,labels="mean", pos=4, col="blue")  
+        text(median(dfinal2$total_step),20,labels="median", pos=4, col="red")  
+}
 
-text(mean(dfinal2$total_step),25,labels="mean", pos=4, col="blue")  
-text(median(dfinal2$total_step),20,labels="median", pos=4, col="red")  
+z.plot2()
 ```
 
-Please note that the red line of median and blue line of mean are overlapped now.That's why the
-blue line has covered the red line.
+Please note that the red line of median and blue line of mean are overlapped now.That's why the blue line has covered the red line.
 
 
 ##Do these values differ from the estimates from the first part of the assignment? 
-        
-        
 ```{r}
-summary(dfinal2)
-summary(a)
+
+par(mfrow=c(1,2))
+z.plot1()
+z.plot2()
+
 ```
 
-Yes. The mean and median shift to right and the number of days that the person walks from 0 to 15000 steps increases. This is because that we impute the NA values with average number of steps at each interval.
 
-        
+Yes. The mean and median shift to right and the frequency of the person walks range from 0 to 15000 steps increases. This is because that we impute the NA values with average number of steps at each interval.
+
+
 ##What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 Increase the number of days that the person walks from 0 to 15000 steps, closer to the average steps walked per day.
@@ -122,23 +160,6 @@ Increase the number of days that the person walks from 0 to 15000 steps, closer 
 ##1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
 ```{r}
-
-##dfinal -> wd
-##wd$weekday <- weekdays(wd$date)
-##for (i in 1:nrow(wd)) {                                       
-##    if (wd[i,]$weekday %in% c("Saturday","Sunday")) {            
-##        wd[i,]$weekday<-"weekend"                                 
-##    }
-##    else{
-##        wd[i,]$weekday<-"weekday"                                 
-##    }
-##}
-##wd$weekday <- as.factor(wd$weekday)
-##wd->wdfinal
-
-##Not using the above code because the performance is too low
-
-
 mutate(dfinal, weekday=weekdays(date))-> wd
 wd[wd["weekday"] == "Saturday" | wd["weekday"] =="Sunday",]->weekend
 mutate(weekend, weekday="weekend")-> weekend
@@ -161,6 +182,6 @@ xyplot(avg_step ~ interval | weekday ,wdfinal2, ylab="Average Number of steps", 
 ```
 
 
-        As the plot shows, the individual works out more at weekend then weekdays in general, and less around 8 a.m.at weekend than during weekdays.
+As the plot shows, the individual works out more at weekend than weekdays in general, and less around 8 a.m.at weekend than during weekdays, due to commute to work in the morning.
 
 

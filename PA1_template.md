@@ -1,9 +1,12 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
 
-## Loading and preprocessing the data
 
 ```r
-activity<-read.csv("activity.csv")
 library(dplyr)
 ```
 
@@ -26,13 +29,43 @@ library(dplyr)
 
 ```r
 library(lattice)
+library(xtable)
 ```
-Convert date type into POSIXct type
+
+```
+## Warning: package 'xtable' was built under R version 3.4.4
+```
+
+```r
+library(knitr)
+```
+
+```
+## Warning: package 'knitr' was built under R version 3.4.4
+```
+## Set global option echo to "TRUE"
+
+```r
+opts_chunk$set(echo=TRUE)
+```
+
+
+## Loading and preprocessing the data
+
+```r
+activity<-read.csv("activity/activity.csv")
+```
+##Convert date type into POSIXct type
 
 ```r
 activity$date <- as.POSIXct(activity$date)
 ```
+
+
+
+
 # What is mean total number of steps taken per day?
+
 
 ##1. Calculate the total number of steps taken per day, save to *a*
 
@@ -44,15 +77,27 @@ activity %>% group_by(date) %>% summarise(total_step = sum(steps, na.rm = TRUE))
 
 
 ```r
-hist(a$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
-abline(v=median(a$total_step), col="red")
-abline(v=mean(a$total_step),col="blue")
-text(mean(a$total_step),25,labels="mean", pos=4, col="blue")  
-text(median(a$total_step),20,labels="median", pos=4, col="red")  
+z.plot1<-function(){
+        
+        hist(a$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
+        abline(v=median(a$total_step), col="red")
+        abline(v=mean(a$total_step),col="blue")
+        text(mean(a$total_step),25,labels="mean", pos=4, col="blue")  
+        text(median(a$total_step),20,labels="median", pos=4, col="red") 
+        
+        
+}
+z.plot1()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
+```r
+mean <- mean(a$total_step)
+median <- median(a$total_step)
+```
+The mean of the total number of steps taken per day is 9354.2295082.
+The median of the total number of steps taken per day is 10395.
 
 
 # What is the average daily activity pattern?
@@ -70,12 +115,12 @@ points(x,y,col="red",pch=12)
 text(x,y,labels="maximum # of steps", pos=4, col="red")  
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 
 ##2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-        Interval 835 on average across all the days contains the maximum number of steps 206.1698113. 
+Interval 835 on average across all the days contains the maximum number of steps 206.1698113. 
 
 
 # Imputing missing values
@@ -92,11 +137,14 @@ text(.7,0,labels=notna, pos=3)
 text(1.9,0,labels=na, pos=3)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 
 
-##2. Devise a strategy for filling in all of the missing values in the dataset. I'll use the average number of steps taken, averaged across all days (y-axis) to impute the missing values at each correspoinding interval.
+##2. Devise a strategy for filling in all of the missing values in the dataset. 
+
+I'll use the average number of steps taken, averaged across all days (y-axis) to impute the missing values at each correspoinding interval.
+
 ##3. Create a new dataset dfinal that is equal to the original dataset but with the missing data filled in.
 
 
@@ -114,57 +162,40 @@ rbind(d1m,d2)->dfinal
 ##4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day
 
 ```r
-dfinal %>% group_by(date) %>% summarise(total_step = sum(steps, na.rm = TRUE)) ->dfinal2
+z.plot2<-function(){
+        
+        dfinal %>% group_by(date) %>% summarise(total_step = sum(steps, na.rm = TRUE)) ->dfinal2
+        
+        p2<-hist(dfinal2$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
+        abline(v=median(dfinal2$total_step), col="red")
+        abline(v=mean(dfinal2$total_step),col="blue")
+        
+        text(mean(dfinal2$total_step),25,labels="mean", pos=4, col="blue")  
+        text(median(dfinal2$total_step),20,labels="median", pos=4, col="red")  
+}
 
-hist(dfinal2$total_step,col="green",main="Total number of steps taken each day",xlab="Total number of steps")
-abline(v=median(dfinal2$total_step), col="red")
-abline(v=mean(dfinal2$total_step),col="blue")
-
-text(mean(dfinal2$total_step),25,labels="mean", pos=4, col="blue")  
-text(median(dfinal2$total_step),20,labels="median", pos=4, col="red")  
+z.plot2()
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
-Please note that the red line of median and blue line of mean are overlapped now.That's why the
-blue line has covered the red line.
+Please note that the red line of median and blue line of mean are overlapped now.That's why the blue line has covered the red line.
 
 
 ##Do these values differ from the estimates from the first part of the assignment? 
-        
-        
 
 ```r
-summary(dfinal2)
+par(mfrow=c(1,2))
+z.plot1()
+z.plot2()
 ```
 
-```
-##       date                       total_step   
-##  Min.   :2012-10-01 00:00:00   Min.   :   41  
-##  1st Qu.:2012-10-16 00:00:00   1st Qu.: 9819  
-##  Median :2012-10-31 00:00:00   Median :10766  
-##  Mean   :2012-10-31 00:25:34   Mean   :10766  
-##  3rd Qu.:2012-11-15 00:00:00   3rd Qu.:12811  
-##  Max.   :2012-11-30 00:00:00   Max.   :21194
-```
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
-```r
-summary(a)
-```
 
-```
-##       date                       total_step   
-##  Min.   :2012-10-01 00:00:00   Min.   :    0  
-##  1st Qu.:2012-10-16 00:00:00   1st Qu.: 6778  
-##  Median :2012-10-31 00:00:00   Median :10395  
-##  Mean   :2012-10-31 00:25:34   Mean   : 9354  
-##  3rd Qu.:2012-11-15 00:00:00   3rd Qu.:12811  
-##  Max.   :2012-11-30 00:00:00   Max.   :21194
-```
+Yes. The mean and median shift to right and the frequency of the person walks range from 0 to 15000 steps increases. This is because that we impute the NA values with average number of steps at each interval.
 
-Yes. The mean and median shift to right and the number of days that the person walks from 0 to 15000 steps increases. This is because that we impute the NA values with average number of steps at each interval.
 
-        
 ##What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 Increase the number of days that the person walks from 0 to 15000 steps, closer to the average steps walked per day.
@@ -177,22 +208,6 @@ Increase the number of days that the person walks from 0 to 15000 steps, closer 
 
 
 ```r
-##dfinal -> wd
-##wd$weekday <- weekdays(wd$date)
-##for (i in 1:nrow(wd)) {                                       
-##    if (wd[i,]$weekday %in% c("Saturday","Sunday")) {            
-##        wd[i,]$weekday<-"weekend"                                 
-##    }
-##    else{
-##        wd[i,]$weekday<-"weekday"                                 
-##    }
-##}
-##wd$weekday <- as.factor(wd$weekday)
-##wd->wdfinal
-
-##Not using the above code because the performance is too low
-
-
 mutate(dfinal, weekday=weekdays(date))-> wd
 wd[wd["weekday"] == "Saturday" | wd["weekday"] =="Sunday",]->weekend
 mutate(weekend, weekday="weekend")-> weekend
@@ -212,9 +227,9 @@ wdfinal %>% group_by(interval, weekday) %>% summarise(avg_step = mean(steps, na.
 xyplot(avg_step ~ interval | weekday ,wdfinal2, ylab="Average Number of steps", xlab="5-Minute Interval",layout=c(1,2), type=c('l','smooth'), lwd=3)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 
-        As the plot shows, the individual works out more at weekend then weekdays in general, and less around 8 a.m.at weekend than during weekdays.
+As the plot shows, the individual works out more at weekend than weekdays in general, and less around 8 a.m.at weekend than during weekdays, due to commute to work in the morning.
 
 
